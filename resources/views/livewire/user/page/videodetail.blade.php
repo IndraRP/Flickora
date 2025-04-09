@@ -121,34 +121,49 @@
                                             {{-- {{ $post->id }} --}}
 
                                             <ul class="dropdown-menu bg-dark" wire:ignore.self>
+                                                <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
+                                                    Download
+                                                </a>
+
+                                                <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
+                                                    Edit
+                                                </a>
+
+                                                <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
+                                                    Hapus
+                                                </a>
+
                                                 <a class="dropdown-item bg-dark fs-10 text-white" data-bs-toggle="modal" data-bs-target="#laporModal" wire:click.prevent="setVideoId({{ $video->id }})">
                                                     Laporkan
                                                 </a>
-
-                                                <li> <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
-                                                        Download Gambar
-                                                    </a></li>
                                             </ul>
                                         </div>
 
-                                        <div class="py-4" style="margin-top: 103px; padding-left: 8px; padding-right: 0px; width: 60px; background: linear-gradient(211deg, rgb(28, 28, 28), rgba(58, 58, 58, 0.592), rgba(58, 58, 58, 0)); margin-right: 2px;">
-                                            <div style="margin-left: 13px">
+                                        <div class="d-flex flex-column align-items-center justify-content-center py-4" style="margin-top: 103px; width: 60px; background: linear-gradient(211deg, rgb(28, 28, 28), rgba(58, 58, 58, 0.592), rgba(58, 58, 58, 0)); margin-right: 2px;">
+
+                                            {{-- LIKE --}}
+                                            <div class="d-flex flex-column align-items-center justify-content-center mb-2">
                                                 @php
                                                     $isLiked = $video->likes_video->where("user_id", auth()->id())->count() > 0;
                                                 @endphp
-                                                <i class="bi {{ $isLiked ? "bi-heart-fill text-danger" : "bi-heart text-white" }} fs-6 me-2" wire:click="toggleLike({{ $video->id }})" style="cursor: pointer;"></i>
+                                                <i class="bi {{ $isLiked ? "bi-heart-fill text-danger" : "bi-heart text-white" }} fs-6" wire:click="toggleLike({{ $video->id }})" style="cursor: pointer;"></i>
+                                                <p class="fs-8 mb-0 text-white">{{ $video->likes_video->count() }}</p>
+                                            </div>
 
-                                                <p class="fs-8 mb-1 text-white" style="margin-left: -2px">Suka</p>
+                                            {{-- KOMENTAR --}}
+                                            <div class="d-flex flex-column align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#comentModal" wire:click="setPostId2({{ $video->id }})" style="cursor: pointer;">
+                                                <i class="bi bi-chat-left-text-fill text-white" style="font-size: 15px;"></i>
+                                                <p class="fs-8 mb-0 text-white">{{ $video->coment_videos->count() }}</p>
                                             </div>
-                                            <div class="d-block my-2 ms-auto pt-1 text-center" data-bs-toggle="modal" data-bs-target="#comentModal" wire:click="setPostId2({{ $video->id }})">
-                                                <i class="bi bi-chat-left-text-fill text-white" style="font-size: 15px; margin-left:-10px;"></i>
-                                                <p class="fs-8 mb-2 text-white" style="margin-top:-1px; margin-left:-7px;">Komentar</p>
-                                            </div>
-                                            <div style="margin-left: 5px;">
-                                                <i class="fa-solid fa-share fs-6 me-3 ms-2 mt-2 text-white" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#shareModal"></i>
+
+                                            {{-- BAGIKAN --}}
+                                            <div class="d-flex flex-column align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#shareModal" style="cursor: pointer;">
+                                                <i class="fa-solid fa-share fs-6 mt-2 text-white"></i>
                                                 <p class="fs-8 mb-0 text-white">Bagikan</p>
                                             </div>
+
                                         </div>
+
                                     </div>
                                 </div>
 
@@ -163,7 +178,7 @@
                         </div>
 
                         {{-- Content text section similar to image posts --}}
-                        <div x-data="{ expanded: false, fullText: `{{ $video->caption ?? "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat, tempora odio molestias suscipit architecto, quibusdam nulla, beatae nemo in consequatur libero vitae magnam molestiae. Ad iste iusto nam aut ipsum!" }}`, maxLength: 80 }" class="content-box position-relative pt-1" style="{{ $this->isPostReported($video->id) ? "filter: blur(10px); background-color: rgba(0, 0, 0, 0.5);" : "" }} background: rgba(255, 255, 255, 0); border-radius: 8px; max-width: 600px; margin: auto; color: #ffffff;">
+                        <div x-data="{ expanded: false, fullText: `{{ $video->caption ?? "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat, tempora odio molestias suscipit architecto, quibusdam nulla, beatae nemo in consequatur libero vitae magnam molestiae. Ad iste iusto nam aut ipsum!" }}`, maxLength: 80 }" class="content-box position-relative pt-2" style="{{ $this->isPostReported($video->id) ? "filter: blur(10px); background-color: rgba(0, 0, 0, 0.5);" : "" }} background: rgba(255, 255, 255, 0); border-radius: 8px; max-width: 600px; margin: auto; color: #ffffff;">
                             <div class="text-wrapper">
                                 <p class="text mb-0" style="font-size: 14px; line-height: 1.6; overflow: hidden;">
                                     <span x-text="expanded ? fullText : fullText.substring(0, maxLength) + '...'"></span>
@@ -216,7 +231,7 @@
                                             </div>
                                             <div class="ms-2">
                                                 <div class="d-flex align-items-center">
-                                                    <p class="fs-7 mb-0">{{ $komentar->user->username ?? "pengguna" }}</p>
+                                                    <p class="fs-8 mb-0">{{ $komentar->user->username ?? "pengguna" }}</p>
                                                     <p class="text-secondary mb-1 ms-2" style="font-size: 10px;">{{ $this->waktuSingkat($komentar->created_at) }}</p>
                                                 </div>
                                                 <p class="mb-0 mt-1" style="font-size: 13px;">{{ $komentar->content }}</p>
@@ -229,7 +244,7 @@
                                                         </button>
 
                                                         @if ($komentar->replies->count() > 0)
-                                                            <button class="btn btn-sm btn-link text-primary text-decoration-none fs-7 d-block ms-1 ps-4 pt-1" wire:click="toggleReplies({{ $komentar->id }})">
+                                                            <button class="btn btn-sm btn-link text-primary text-decoration-none fs-7 d-block pt-1" style="margin-left: -8px;" wire:click="toggleReplies({{ $komentar->id }})">
                                                                 {{ isset($show_replies[$komentar->id]) ? "Sembunyikan Balasan" : "Lihat Balasan (" . $komentar->replies->count() . ")" }}
                                                             </button>
                                                         @endif
@@ -240,13 +255,13 @@
                                                 @if (isset($show_replies[$komentar->id]))
                                                     <div class="ms-4 pb-3">
                                                         @foreach ($komentar->replies as $reply)
-                                                            <div class="d-flex align-items-start mt-2">
+                                                            <div class="d-flex align-items-start mt-2" style="margin-left: -25px;">
                                                                 <div class="rounded-pill overflow-hidden" style="width: 35px; height: 35px;">
                                                                     <img src="{{ $reply->user->profile_photo ?? "https://i.pinimg.com/474x/d4/87/74/d48774278b794703e974bedaa1162ac3.jpg" }}" class="w-100 h-100 object-fit-cover">
                                                                 </div>
                                                                 <div class="ms-2">
                                                                     <div class="d-flex align-items-center">
-                                                                        <p class="fs-7 mb-0">{{ $reply->user->username ?? "pengguna" }}</p>
+                                                                        <p class="fs-8 mb-0">{{ $reply->user->username ?? "pengguna" }}</p>
                                                                         <p class="text-secondary mb-1 ms-2" style="font-size: 10px;">{{ $this->waktuSingkat($reply->created_at) }}</p>
                                                                     </div>
                                                                     <p class="mb-0 mt-1" style="font-size: 13px;">{{ $reply->content }}</p>
@@ -492,7 +507,6 @@
 
     </div>
 </div>
-
 
 @push("scripts")
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.4/lottie.min.js"></script>

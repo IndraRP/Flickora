@@ -9,7 +9,7 @@ class Report extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['post_id', 'user_id', 'alasan'];
+    protected $guarded = []; // Semua kolom dapat diubah
 
     // Relasi ke Post
     public function post()

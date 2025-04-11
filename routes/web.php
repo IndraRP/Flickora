@@ -8,6 +8,7 @@ use App\Livewire\CompressImage;
 use App\Livewire\User\Bio\Bio;
 use App\Livewire\User\Group\Group;
 use App\Livewire\User\Group\GroupChat;
+use App\Livewire\User\Group\GrupDetail;
 use App\Livewire\User\Lock\Chatbox;
 use App\Livewire\User\Lock\ChatDetail;
 use App\Livewire\User\Lock\Createchat;
@@ -31,7 +32,7 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::get('/cek', function () {
-    dd(Hash::make('12345'));
+    dd(Hash::make('12345678'));
 });
 
 
@@ -53,7 +54,7 @@ Route::get('/postdetail/{userid}/{postId}', PostinganDetail::class)->name('postd
 // Route::get('/tagdetail/{userid}/{postId}', Tagdetail::class)->name('tagdetail');
 Route::get('/tagdetail/{userid}/{tagId}', Tagdetail::class)->name('tagdetail');
 
-Route::get('/highdetail/{userid}/{tagId}', Highlightdetail::class)->name('highdetail');
+Route::get('/highdetail/{userid}/{highlightId}', Highlightdetail::class)->name('highdetail');
 Route::get('/videodetail/{userid}/{videoId}', Videodetail::class)->name('videodetail');
 
 Route::get('/upload_post', UploadPost::class)->name('upload_post');
@@ -71,6 +72,7 @@ Route::get('/chat_detail', ChatDetail::class)->name('chat_detail');
 
 
 Route::get('/grup', GroupChat::class)->name('grup');
+Route::get('/grup_detail', GrupDetail::class)->name('grup_detail');
 
 Route::get('/groups', [GroupChatController::class, 'index'])->name('groups.index');
 Route::get('/groups/{group}', [GroupChatController::class, 'show'])->name('groups.show');

@@ -407,7 +407,7 @@ class Page extends Component
             $highlight = $this->highlights[$index];
             return redirect()->route('highdetail', [
                 'userid' => Auth::id(), // ID user yang login
-                'tagId' => $highlight->id // ID dari highlight yang diklik
+                'highlightId' => $highlight->id // ID dari highlight yang diklik
             ]);
         }
 

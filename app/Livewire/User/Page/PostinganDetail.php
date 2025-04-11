@@ -44,6 +44,9 @@ class PostinganDetail extends Component
     public $parent_id = null;
     public $show_replies = [];
 
+    public $selectedPostId;
+    public $selectedDescription;
+
     public $refreshInterval = 10000;
 
     protected $listeners = [
@@ -86,6 +89,12 @@ class PostinganDetail extends Component
     {
         $this->post_id = $id;
         logger()->info('Post ID berhasil disimpan: ' . $this->post_id);
+
+        $post = \App\Models\Post::find($id);
+        if ($post) {
+            $this->selectedImage = asset('storage/' . $post->image);
+            $this->selectedDescription = $post->description;
+        }
     }
 
     public function setImageModal($image)
@@ -126,6 +135,40 @@ class PostinganDetail extends Component
     public function isPostInBanding($postId)
     {
         return Banding::where('post_id', $postId)->exists();
+    }
+
+    public function hapus()
+    {
+        $post = Post::find($this->postId);
+
+        if ($post) {
+            // Optional: Hapus file gambar dari storage kalau ada
+            if ($post->image && Storage::disk('public')->exists($post->image)) {
+                Storage::disk('public')->delete($post->image);
+            }
+
+            $post->delete();
+
+            $this->alert('success', 'Berhasil, Postingan berhasil dihapus');
+            return redirect()->to(request()->header('Referer'));
+        } else {
+            $this->alert('error', 'Gagal, Postingan gagal dihapus');
+        }
+    }
+
+
+    public function simpanPerubahan()
+    {
+        $post = Post::find($this->postId);
+        // dd($post);
+
+        if ($post) {
+            $post->content = $this->selectedDescription;
+            $post->save();
+
+            $this->alert('success', 'Berhasil, Postingan berhasil diperbarui');
+            return redirect()->to(request()->header('Referer'));
+        }
     }
 
     public function report()

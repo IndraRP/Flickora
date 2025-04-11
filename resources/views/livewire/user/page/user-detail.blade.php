@@ -208,14 +208,41 @@
 
 
                 <div class="content-section">
-                    <div class="">
-                        <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
-                            <img src="{{ asset("images/animasi3.svg") }}" style="width: 300px; height: auto;" loading="lazy">
+                    @if ($videos->isEmpty())
+                        <div class="" id="video">
+                            <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
+                                <img src="{{ asset("images/animasi2.svg") }}" style="width: 300px; height: auto;" loading="lazy">
+                            </div>
+                            <div style="margin-top: 0px;">
+                                <p class="text-center text-white">Belum ada ditandai.</p>
+                            </div>
                         </div>
-                        <div style="margin-top: 0px;">
-                            <p class="text-center text-white">Belum ada postingan video.</p>
+                    @else
+                        <div class="row g-2 rounded-top p-0 px-1">
+                            <div id="video"></div>
+                            @foreach ($videos->reverse() as $video)
+                                @if ($video->video)
+                                    <div class="col-4">
+                                        <div style="position: relative; cursor: pointer;" wire:click="saveUserAndVideoIdToSession({{ $video->id }})">
+
+                                            {{-- Thumbnail Video --}}
+                                            <video style="height: 111px; width: 100%; object-fit: cover; border-radius: 8px;" muted>
+                                                <source src="{{ asset("storage/" . $video->video) }}" type="video/mp4">
+                                            </video>
+
+                                            {{-- Ikon Play --}}
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                                            background: rgba(0, 0, 0, 0.5); border-radius: 50%; width: 40px; height: 40px; display: flex; 
+                                            align-items: center; justify-content: center;">
+                                                <i class="fa fa-play text-white"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
                         </div>
-                    </div>
+
+                    @endif
                 </div>
 
                 <div class="content-section">
@@ -457,7 +484,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content bg-dark">
                 <div class="modal-body">
-                    <img class="rounded" style="height: 350px; width: 100%; object-fit: cover;" src="{{ asset($avatar) }}">
+                    <img class="rounded" style="height: 350px; width: 100%; object-fit: cover;" src="{{ asset("storage/" . $avatar) }}">
                 </div>
             </div>
         </div>

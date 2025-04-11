@@ -1,3 +1,64 @@
+@section("styles")
+    <style>
+        .messenger-search[type="text"] {
+            margin: 0px 0px;
+            width: 100%;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .text-wrapper {
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            position: relative;
+        }
+
+        .modal-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            margin: 0;
+        }
+
+
+        .radio-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="radio"] {
+            width: 22px;
+            height: 22px;
+            accent-color: #007bff;
+            /* Warna biru ala Bootstrap */
+        }
+
+        label {
+            font-size: 13px;
+        }
+
+        .collapsed {
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .expanded {
+            max-height: 1000px;
+            overflow: visible;
+        }
+    </style>
+@endsection
+
 <div style="padding-bottom: 40px; background-color: #1C1C1C">
 
     <div class="d-flex fixed-top px-2 py-2" style="background-color: #0c0b0b;">
@@ -11,119 +72,156 @@
 
     <div style="padding-top: 65px; background-color: #1C1C1C">
         @foreach ($posts->reverse() as $post)
-            <div id="post-{{ $post->id }}" class="position-relative px-3 pt-3">
+            @foreach ($post->userTags(auth()->id())->get() as $tag)
+                <div id="post-{{ $post->id }}" class="position-relative px-3 pb-1 pt-3">
 
-                <div style="">
-                    <div class="rounded" style='background: linear-gradient(to top, rgba(1, 4, 30, 0), rgba(44, 50, 58, 0), rgba(0, 0, 0, 0.029)), 
-                           linear-gradient(to left, rgba(1, 4, 30, 0), rgba(41, 46, 52, 0), rgba(0, 0, 0, 0.022)), 
+                    <div style="">
+                        <div class="rounded" style='background: linear-gradient(to top, rgba(1, 4, 30, 0), rgba(44, 50, 58, 0)), 
                            url("{{ asset("storage/" . $post->image) }}"); 
-                           background-size: cover; width: 100%; height: 350px; 
+                           background-size: cover; width: 100%; max-height: 350px; 
                            {{ $this->isPostReported($post->id) ? "filter: blur(10px); background-color: rgba(0, 0, 0, 0.5);" : "" }}'>
 
+                            <!-- Tombol Suka dan Bagikan -->
+                            <div class="d-flex">
+                                <div class="d-block me-2 ms-auto" style="margin-right: 0px; padding-top: 30px; ">
+                                    <div class="dropdown">
+                                        <i class="bi bi-three-dots-vertical fs-6 rounded-pill me-3 ms-2 mt-2 p-2 text-white" style="background-color:#1c1c1c4f; cursor: pointer;" data-bs-toggle="dropdown" aria-expanded="false">
+                                        </i>
+                                        {{-- {{ $post->id }} --}}
 
-                        <!-- Tombol Suka dan Bagikan -->
-                        <div class="d-flex">
-                            <div class="d-block ms-auto" style="margin-right: -10px; margin-top: 18px;">
-                                <div class="dropdown">
-                                    <i class="bi bi-three-dots-vertical fs-6 rounded-pill me-3 ms-2 mt-2 p-2 text-white" style="background-color:#1c1c1c4f; cursor: pointer;" data-bs-toggle="dropdown" aria-expanded="false">
-                                    </i>
-                                    {{-- {{ $post->id }} --}}
+                                        <ul class="dropdown-menu bg-dark">
 
-                                    <ul class="dropdown-menu bg-dark">
-                                        <a class="dropdown-item bg-dark fs-10 text-white" data-bs-toggle="modal" data-bs-target="#laporModal" wire:click="setPostId({{ $post->id }})">
-                                            Laporkan
-                                        </a>
-
-                                        <li> <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $post->id }})" style="cursor: pointer;">
+                                            <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $post->id }})" style="cursor: pointer;">
                                                 Download Gambar
-                                            </a></li>
-                                    </ul>
+                                            </a>
+
+                                            {{-- <p class="text-white">userId: {{ $userId }} | auth: {{ auth()->id() }}</p> --}}
+
+                                            @auth
+                                                @if ($userId === auth()->id())
+                                                    <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#hapusModal" wire:click="setTagId({{ $tag->id }})">
+                                                        Hapus
+                                                    </a>
+                                                @endif
+                                            @endauth
+
+                                            <a class="dropdown-item bg-dark fs-10 text-white" data-bs-toggle="modal" data-bs-target="#laporModal" wire:click="setPostId({{ $post->id }})">
+                                                Laporkan
+                                            </a>
+                                        </ul>
+                                    </div>
+
+
+                                    <script>
+                                        window.addEventListener('downloadFile', event => {
+                                            const url = event.detail.url;
+                                            const link = document.createElement('a');
+                                            link.href = url;
+                                            link.download = url.substring(url.lastIndexOf('/') + 1);
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        });
+                                    </script>
+
+
+                                    <div class="d-flex flex-column align-items-center justify-content-center rounded py-4" style="margin-top: 60px; margin-bottom: 40px; padding: 8px 0; width: 60px;
+       background: linear-gradient(211deg, rgb(17, 17, 17), rgba(58, 58, 58, 0.878), rgba(58, 58, 58, 0.27));">
+
+                                        {{-- LIKE --}}
+                                        <div class="d-flex flex-column align-items-center justify-content-center mb-2">
+                                            @php
+                                                $isLiked = $post->likes->where("user_id", auth()->id())->count() > 0;
+                                            @endphp
+                                            <i class="bi {{ $isLiked ? "bi-heart-fill text-danger" : "bi-heart text-white" }} fs-6" wire:click="toggleLike({{ $post->id }})" style="cursor: pointer;"></i>
+                                            <p class="fs-8 mb-0 text-white">{{ $post->likes->count() }}</p>
+                                        </div>
+
+                                        {{-- KOMENTAR --}}
+                                        <div class="d-flex flex-column align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#comentModal" wire:click="setPostId2({{ $post->id }})" style="cursor: pointer;">
+                                            <i class="bi bi-chat-left-text-fill text-white" style="font-size: 15px;"></i>
+                                            <p class="fs-8 mb-0 text-white">{{ $post->coments->count() }}</p>
+                                        </div>
+
+                                        {{-- BAGIKAN --}}
+                                        <div class="d-flex flex-column align-items-center justify-content-center mt-1" data-bs-toggle="modal" data-bs-target="#shareModal" style="cursor: pointer;">
+                                            <i class="fa-solid fa-share fs-6 text-white"></i>
+                                            <p class="fs-8 mb-0 text-white">Bagikan</p>
+                                        </div>
+
+                                    </div>
+
+
                                 </div>
+                            </div>
 
-
-                                <script>
-                                    window.addEventListener('downloadFile', event => {
-                                        const url = event.detail.url;
-                                        const link = document.createElement('a');
-                                        link.href = url;
-                                        link.download = url.substring(url.lastIndexOf('/') + 1);
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                    });
-                                </script>
-
-                                <div class="ms-2" style="margin-top: 205px;">
-                                    {{-- <i class="bi bi-heart-fill fs-5 me-3 text-white" style="cursor: pointer;"></i> --}}
-
-                                    @php
-                                        $isLiked = $post->likes->where("user_id", auth()->id())->count() > 0;
-                                    @endphp
-
-                                    <i class="bi {{ $isLiked ? "bi-heart-fill text-danger" : "bi-heart text-white" }} fs-6 me-3" wire:click="toggleLike({{ $post->id }})" style="cursor: pointer;"></i>
-                                    <p class="fs-8 mb-1 text-white">Suka</p>
+                            <!-- Informasi User -->
+                            <div class="d-flex align-items-center rounded px-3 pt-2" style="margin-top: -55px; margin-right: 120px; background: linear-gradient(135deg, rgb(28, 28, 28), rgba(58, 58, 58, 0.773), rgba(58, 58, 58, 0.313)); height: 55px;">
+                                <div class="d-flex" style="margin-bottom: 10px;  margin-top: 6px;">
+                                    <img src="{{ asset("storage/" . $user->avatar) }}" class="rounded-pill" style="width: 35px; height: 35px; object-fit: cover;">
+                                    <p class="fs-10 mb-2 ms-2 text-white" style="margin-top: 9px;">
+                                        {{ Str::limit($user->name, 20, "...") }}
+                                    </p>
                                 </div>
-
-                                {{-- wire:click="share" onclick="copyToClipboard('{{ route("postdetail", ["userid" => $post->user->id, "postId" => $post->id]) }}')" --}}
-
-                                <div class="">
-                                    <i class="fa-solid fa-share fs-6 me-3 ms-2 mt-2 text-white" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#shareModal">
-                                    </i>
-                                    <p class="fs-8 text-white">Bagikan</p>
-                                </div>
-
                             </div>
                         </div>
 
-                        <!-- Informasi User -->
-                        <div class="d-flex align-items-center px-3" style="margin-top: -53px;">
-                            <div class="d-flex mb-3">
-                                <img src="{{ asset("storage/" . $post->user->avatar) }}" class="rounded-pill" style="width: 35px; height: 35px; object-fit: cover;">
-                                <p class="fs-10 mb-0 ms-2 text-white" style="margin-top: 9px;">{{ $post->user->name }}</p>
-                            </div>
-                            <div class="d-block ms-auto text-center" style="margin-right: 52px;" data-bs-toggle="modal" data-bs-target="#comentModal" wire:click="setPostId2({{ $post->id }})">
-                                <i class="bi bi-chat-left-text-fill text-white" style="font-size: 15px;"></i>
-                                <p class="fs-8 text-white" style="margin-top:-1px;">Komentar</p>
-                            </div>
+                        <div class="position-absolute top-50 start-50 translate-middle w-50 h-50" style="background: rgba(0, 0, 0, 0); border-radius: 8px; cursor: pointer;" wire:click="setImageModal('{{ asset("storage/" . $post->image) }}')">
                         </div>
-                    </div>
 
-                    <!-- Konten Post -->
-                    <div x-data="{ expanded: false }" class="content-box pt-1" style="{{ $this->isPostReported($post->id) ? "filter: blur(10px); background-color: rgba(0, 0, 0, 0.5);" : "" }} background: rgba(255, 255, 255, 0); border-radius: 8px; max-width: 600px; margin: auto; color: #ffffff;">
+                        <div x-data="{ expanded: false, fullText: `Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat, tempora odio molestias suscipit architecto, quibusdam nulla, beatae nemo in consequatur libero vitae magnam molestiae. Ad iste iusto nam aut ipsum!`, maxLength: 80 }" class="content-box position-relative pt-2" style="{{ $this->isPostReported($post->id) ? "filter: blur(10px); background-color: rgba(0, 0, 0, 0.5);" : "" }} background: rgba(255, 255, 255, 0); border-radius: 8px; max-width: 600px; margin: auto; color: #ffffff;">
 
-                        <p x-bind:class="expanded ? 'expanded' : 'collapsed'" class="text mb-0" style="transition: max-height 0.4s ease-in-out; font-size: 14px; line-height: 1.6;">
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat, tempora odio molestias suscipit architecto, quibusdam nulla, beatae nemo in consequatur libero vitae magnam molestiae. Ad iste iusto nam aut ipsum!
-                        </p>
-                        <div style="display: flex; justify-content: flex-end;">
-                            <button @click="expanded = !expanded" class="btn-toggle" style="background: none; border: none; color: #007bff; font-size: 14px; cursor: pointer;">
-                                <span x-text="expanded ? 'Tampilkan Lebih Sedikit' : 'Baca Selengkapnya'"></span>
+                            <div class="text-wrapper 2">
+                                <p class="text mb-0" style="font-size: 14px; line-height: 1.6; overflow: hidden;">
+                                    <span x-text="expanded ? fullText : fullText.substring(0, maxLength) + '...'"></span>
+                                </p>
+                            </div>
+
+                            <button x-show="fullText.length > maxLength" @click="expanded = !expanded" class="btn-toggle" style="position: absolute; right: 0; bottom: 0; background: none; border: none; color: #007bff; font-size: 14px; cursor: pointer; white-space: nowrap;">
+                                <span x-text="expanded ? 'Lebih Sedikit' : 'Baca Selengkapnya'"></span>
                             </button>
                         </div>
-                    </div>
-                </div>
 
-                @if ($this->isPostReported($post->id) && auth()->id() === $post->user_id)
-                    @if ($this->isPostInBanding($post->id))
-                        {{-- Jika sudah mengajukan banding --}}
-                        <div class="position-absolute top-50 start-50 translate-middle rounded p-3 text-center text-white shadow-lg" style="background: rgba(0, 0, 0, 0.85); width: 90%; z-index: 1000; pointer-events: auto; backdrop-filter: none; filter: none;">
-                            <p class="fs-10 mb-2 text-center">⚠️ Sabar broo, banding sedang dipertimbangkan...</p>
-                        </div>
-                    @else
-                        {{-- Jika belum mengajukan banding --}}
-                        <div class="position-absolute top-50 start-50 translate-middle rounded p-3 text-center text-white shadow-lg" style="background: rgba(0, 0, 0, 0.85); width: 90%; z-index: 1000; pointer-events: auto; backdrop-filter: none; filter: none;">
-                            <p class="fs-10 mb-2 text-center">⚠️ Postingan Anda telah di-report dan sedang dalam peninjauan.</p>
-                            <button wire:click="setReportId({{ $post->id }})" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#bandingModal">
-                                Ajukan Banding
-                            </button>
-                        </div>
+                    </div>
+
+                    @if ($this->isPostReported($post->id) && auth()->id() === $post->user_id)
+                        @if ($this->isPostInBanding($post->id))
+                            {{-- Jika sudah mengajukan banding --}}
+                            <div class="position-absolute top-50 start-50 translate-middle rounded p-3 text-center text-white shadow-lg" style="background: rgba(0, 0, 0, 0.85); width: 90%; z-index: 1000; pointer-events: auto; backdrop-filter: none; filter: none;">
+                                <p class="fs-10 mb-2 text-center">⚠️ Sabar broo, banding sedang dipertimbangkan...</p>
+                            </div>
+                        @else
+                            {{-- Jika belum mengajukan banding --}}
+                            <div class="position-absolute top-50 start-50 translate-middle rounded p-3 text-center text-white shadow-lg" style="background: rgba(0, 0, 0, 0.85); width: 90%; z-index: 1000; pointer-events: auto; backdrop-filter: none; filter: none;">
+                                <p class="fs-10 mb-2 text-center">⚠️ Postingan Anda telah di-report dan sedang dalam peninjauan.</p>
+                                <button wire:click="setReportId({{ $post->id }})" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#bandingModal">
+                                    Ajukan Banding
+                                </button>
+                            </div>
+                        @endif
                     @endif
-                @endif
 
 
-            </div>
+                </div>
+            @endforeach
         @endforeach
     </div>
     {{-- -{{ $postId }} --}}
+
+    <!-- Modal Image Post-->
+    <div wire:ignore.self class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white" style="max-height: 700px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fs-6" id="imageModalLabel">Foto Postingan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2 text-center" style="padding-bottom: 20px;">
+                    <img src="{{ $selectedImage }}" class="img-fluid rounded" style="max-height: 550px; width: 400px; object-fit:cover" alt="Gambar Postingan">
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Lapor-->
     <div class="modal fade" id="laporModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
@@ -164,6 +262,35 @@
         </div>
     </div>
 
+
+    <!-- Modal Hapus-->
+    <div class="modal fade" id="hapusModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content bg-dark">
+                <div class="modal-body py-5">
+                    <div class="d-flex justify-content-center">
+                        <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center mt-2 text-center">
+                        <p class="fs-6 text-white">Apakah anda yakin ingin menghapus postingan ini?</p>
+                    </div>
+
+
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="submit" wire:click="hapus()" class="btn btn-danger text-white" style="width: 100px; height: 40px;">
+                            Ya, Yakin
+                        </button>
+                        <button type="button" class="btn border-primary ms-3 border text-white" style="width: 100px; height: 40px;" data-bs-dismiss="modal" aria-label="Close">
+                            Tidak
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Coment-->
     <div wire:poll.{{ $refreshInterval }}ms>
         <div class="modal fade modal-bottom" id="comentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
@@ -177,43 +304,89 @@
                         <hr class="my-1" style="border-color: white;">
                         <div class="mt-3" style="height: 315px; overflow-y: auto;" id="komentar-container">
                             @if (count($komentar_list) > 0)
-                                @foreach ($komentar_list->sortByDesc("id") as $komentar)
-                                    <div class="d-flex align-items-start" style="min-height: 80px;">
+                                @foreach ($komentar_list->where("parent_id", null) as $komentar)
+                                    <div class="d-flex align-items-start mt-3">
                                         <div class="rounded-pill overflow-hidden" style="width: 45px; height: 45px;">
                                             <img src="{{ $komentar->user->profile_photo ?? "https://i.pinimg.com/474x/d4/87/74/d48774278b794703e974bedaa1162ac3.jpg" }}" class="w-100 h-100 object-fit-cover">
                                         </div>
                                         <div class="ms-2">
                                             <div class="d-flex align-items-center">
-                                                <p class="fs-7 mb-0">{{ $komentar->user->username ?? "pengguna" }}</p>
-                                                <p class="text-secondary mb-1 ms-2" style="font-size: 10px;">{{ \Carbon\Carbon::parse($komentar->created_at)->format("d/m/Y H:i") }}</p>
+                                                <p class="fs-8 mb-0">{{ $komentar->user->username ?? "pengguna" }}</p>
+                                                <p class="text-secondary mb-1 ms-2" style="font-size: 10px;">{{ $this->waktuSingkat($komentar->created_at) }}</p>
                                             </div>
                                             <p class="mb-0 mt-1" style="font-size: 13px;">{{ $komentar->content }}</p>
+
+                                            <div class="w-100 d-block">
+                                                {{-- Bungkus tombol dalam div sendiri --}}
+                                                <div class="w-100 mt-1">
+                                                    <button class="btn btn-sm btn-link text-secondary text-decoration-none fs-7 d-block pb-0 ps-0" wire:click="setReply({{ $komentar->id }})" onclick="setTimeout(() => document.getElementById('input-komentar').focus(), 100)">
+                                                        Balas
+                                                    </button>
+
+                                                    @if ($komentar->replies->count() > 0)
+                                                        <button class="btn btn-sm btn-link text-primary text-decoration-none fs-7 d-block pt-1" style="margin-left: -8px;" wire:click="toggleReplies({{ $komentar->id }})">
+                                                            {{ isset($show_replies[$komentar->id]) ? "Sembunyikan Balasan" : "Lihat Balasan (" . $komentar->replies->count() . ")" }}
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            {{-- Tampilkan Balasan Jika Dibuka --}}
+                                            @if (isset($show_replies[$komentar->id]))
+                                                <div class="ms-4 pb-3">
+                                                    @foreach ($komentar->replies as $reply)
+                                                        <div class="d-flex align-items-start mt-2" style="margin-left: -25px;">
+                                                            <div class="rounded-pill overflow-hidden" style="width: 35px; height: 35px;">
+                                                                <img src="{{ $reply->user->profile_photo ?? "https://i.pinimg.com/474x/d4/87/74/d48774278b794703e974bedaa1162ac3.jpg" }}" class="w-100 h-100 object-fit-cover">
+                                                            </div>
+                                                            <div class="ms-2">
+                                                                <div class="d-flex align-items-center">
+                                                                    <p class="fs-8 mb-0">{{ $reply->user->username ?? "pengguna" }}</p>
+                                                                    <p class="text-secondary mb-1 ms-2" style="font-size: 10px;">{{ $this->waktuSingkat($reply->created_at) }}</p>
+                                                                </div>
+                                                                <p class="mb-0 mt-1" style="font-size: 13px;">{{ $reply->content }}</p>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
                             @else
-                                <div class="mt-5 text-center">
+                                <div class="text-center" style="margin-top: 115px;">
                                     <p class="text-secondary">Belum ada komentar</p>
                                 </div>
                             @endif
                         </div>
 
-                        <div class="d-flex align-items-center pt-2">
-                            @if (session()->has("pesan_error"))
-                                <div class="alert alert-danger w-100 p-1">
-                                    {{ session("pesan_error") }}
+                        <div class="d-block fixed-bottom mx-3 pb-3 pt-2" style="background-color: #1C1C1C">
+                            @if ($parent_id)
+                                <div style="margin-top: -25px;" class="d-flex align-items-center mb-2">
+                                    <p class="text-secondary fs-7 mb-0">Membalas komentar...</p>
+                                    <p class="fs-7 text-danger mb-0 ms-auto" wire:click="batal()" style="font-weight: 600;">batalkan membalas</p>
                                 </div>
                             @endif
-                            <input type="text" class="form-control me-2 bg-transparent text-white" wire:model.defer="teks_komentar" placeholder="Tulis komentar..." style="flex: 1;" wire:keydown.enter="tambahKomentar" />
-                            <button class="btn border-0" wire:click="tambahKomentar()" style="background: linear-gradient(to right, #1547CE, #3d6eaf, #4c89d4);">
-                                <i class="fa-solid fa-paper-plane fs-5 text-white" style="margin:3px;"></i>
-                            </button>
+
+
+                            <div class="d-flex align align-items-center">
+                                @if (session()->has("pesan_error"))
+                                    <div class="alert alert-danger w-100 p-1">
+                                        {{ session("pesan_error") }}
+                                    </div>
+                                @endif
+                                <input type="text" class="form-control me-2 bg-transparent text-white" id="input-komentar" wire:model.defer="teks_komentar" placeholder="Tulis komentar..." style="flex: 1;" wire:keydown.enter="tambahKomentar" />
+                                <button class="btn border-0" wire:click="tambahKomentar()" style="background: linear-gradient(to right, #1547CE, #3d6eaf, #4c89d4);">
+                                    <i class="fa-solid fa-paper-plane fs-5 text-white" style="margin:3px;"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <style>
         ::placeholder {
             color: white !important;
@@ -331,16 +504,6 @@
         </div>
     </div>
 
-    <style>
-        .messenger-search[type="text"] {
-            margin: 0px 0px;
-            width: 100%;
-            border: none;
-            padding: 8px 10px;
-            border-radius: 6px;
-            outline: none;
-        }
-    </style>
 
     <!-- Modal share-->
     <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
@@ -355,7 +518,7 @@
                         <i class="bi bi-search position-absolute top-50 translate-middle-y end-0 me-4 text-white"></i>
                     </div>
 
-                    {{-- <div class="container" style="margin-top: 20px;">
+                    <div class="container" style="margin-top: 20px;">
                         @if ($friends->isNotEmpty())
                             <div class="scrollable-friends" style="max-height: 180px; overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none;">
                                 <style>
@@ -377,7 +540,7 @@
                         @else
                             <p class="text-center text-white">Tidak ada teman yang ditemukan.</p>
                         @endif
-                    </div> --}}
+                    </div>
 
                 </div>
 
@@ -413,163 +576,18 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function downloadImage(postId) {
-            if (!postId) {
-                console.error('ID Post tidak ditemukan');
-                alert('Error: ID Post tidak ditemukan');
-                return;
-            }
-
-            // Emit event ke Livewire
-            Livewire.emit('getImageUrl', postId);
-        }
-
-        // Tangani event dari Livewire untuk mendapatkan URL gambar
-        Livewire.on('imageUrlGenerated', (data) => {
-            if (data.success && data.imageUrl) {
-                const downloadLink = document.createElement('a');
-                downloadLink.href = data.imageUrl;
-                downloadLink.download = data.filename || `gambar_post.jpg`;
-
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-            } else {
-                alert('Gambar tidak ditemukan atau tidak dapat diunduh');
-            }
-        });
-    </script>
-
-    <script>
-        function shareToWhatsApp() {
-            // The URL you want to share
-            const shareUrl = window.location.href; // Gets current page URL
-
-            // You can also set a custom message
-            const shareMessage = "Check this out!";
-
-            // Encode the URL and message for WhatsApp
-            const encodedMessage = encodeURIComponent(shareMessage);
-            const encodedUrl = encodeURIComponent(shareUrl);
-
-            // Create the WhatsApp share link
-            const whatsappLink = `https://api.whatsapp.com/send?text=${encodedMessage}%20${encodedUrl}`;
-
-            // Open WhatsApp in a new window/tab
-            window.open(whatsappLink, '_blank');
-        }
-    </script>
-
-    <!-- Modal komentar-->
-    {{-- <div class="modal fade" id="comentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
-        <div class="modal-dialog modal-bottom" role="document">
-            <div class="modal-content bg-dark" style="height:400px;">
-                <div class="modal-body py-2">
-
-                    <p class="fs-5 fw-bolder pt-2 text-white">Bagikan</p>
-
-                    <div class="container">
-                        @if ($friends->isNotEmpty())
-                            <div class="row row-cols-4 justify-content-center mb-2">
-                                @foreach ($friends as $friend)
-                                    <div class="col mb-3 text-center">
-                                        <img src="{{ asset("storage/" . $friend->avatar) }}" class="d-block rounded-pill" style="height: 60px; width: 60px; object-fit: cover;">
-                                        <p class="fs-7 mb-0 ms-1 mt-1 text-center text-white">
-                                            {{ Str::limit($friend->username, 7, "...") }}
-                                        </p>
-
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-center text-white">Tidak ada teman yang ditemukan.</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="modal-footer d-flex justify-content-evenly border-0" style="padding-bottom: -30px;">
-
-                    <div class="d-block text-center" style="width: 60px;">
-                        <div class="rounded-pill border border-white p-2" style="width: 56px;">
-                            <i class="bi bi-whatsapp fs-2 text-white"></i>
-                        </div>
-                        <p class="fs-8 mb-0 me-2 mt-1 text-white">WhatsApp</p>
-                    </div>
-
-                    <div class="d-block text-center" style="width: 60px;">
-                        <div class="rounded-pill border border-white p-2" style="width: 56px;">
-                            <i class="bi bi-copy fs-2 text-white"></i>
-                        </div>
-                        <p class="fs-8 mb-0 mt-1 text-white">Salin Link</p>
-                    </div>
-
-                    <div class="d-block text-center" style="width: 60px;">
-                        <div class="rounded-pill border border-white p-2" style="width: 56px;">
-                            <i class="bi bi-download fs-2 text-white"></i>
-                        </div>
-                        <p class="fs-8 mb-0 mt-1 text-white">Unduh</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> --}}
-
-
-
-    <style>
-        .modal-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            margin: 0;
-        }
-
-
-        .radio-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        input[type="radio"] {
-            width: 22px;
-            height: 22px;
-            accent-color: #007bff;
-            /* Warna biru ala Bootstrap */
-        }
-
-        label {
-            font-size: 13px;
-        }
-    </style>
-
-
-    <style>
-        .collapsed {
-            max-height: 60px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .expanded {
-            max-height: 1000px;
-            overflow: visible;
-        }
-    </style>
-
 </div>
 
 
 @push("scripts")
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.4/lottie.min.js"></script>
+
+    <script>
+        window.addEventListener('openImageModal', event => {
+            var myModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            myModal.show();
+        });
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -658,6 +676,55 @@
                 }
             });
         });
+    </script>
+
+
+    <script>
+        function downloadImage(postId) {
+            if (!postId) {
+                console.error('ID Post tidak ditemukan');
+                alert('Error: ID Post tidak ditemukan');
+                return;
+            }
+
+            // Emit event ke Livewire
+            Livewire.emit('getImageUrl', postId);
+        }
+
+        // Tangani event dari Livewire untuk mendapatkan URL gambar
+        Livewire.on('imageUrlGenerated', (data) => {
+            if (data.success && data.imageUrl) {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = data.imageUrl;
+                downloadLink.download = data.filename || `gambar_post.jpg`;
+
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            } else {
+                alert('Gambar tidak ditemukan atau tidak dapat diunduh');
+            }
+        });
+    </script>
+
+    <script>
+        function shareToWhatsApp() {
+            // The URL you want to share
+            const shareUrl = window.location.href; // Gets current page URL
+
+            // You can also set a custom message
+            const shareMessage = "Check this out!";
+
+            // Encode the URL and message for WhatsApp
+            const encodedMessage = encodeURIComponent(shareMessage);
+            const encodedUrl = encodeURIComponent(shareUrl);
+
+            // Create the WhatsApp share link
+            const whatsappLink = `https://api.whatsapp.com/send?text=${encodedMessage}%20${encodedUrl}`;
+
+            // Open WhatsApp in a new window/tab
+            window.open(whatsappLink, '_blank');
+        }
     </script>
 @endpush
 

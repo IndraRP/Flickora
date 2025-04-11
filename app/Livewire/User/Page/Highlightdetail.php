@@ -16,10 +16,15 @@ class Highlightdetail extends Component
     public $liked = false;
     public $highlights = [];
     public $user;
+    public $initialSlideIndex = 0;
+
     // public $highlightId;
 
     public function mount($highlightId = null)
     {
+
+        // dd(session()->all());
+
         if (!auth()->check()) {
             return redirect()->route('login');
         }
@@ -43,6 +48,12 @@ class Highlightdetail extends Component
             // Kirim event ke frontend agar swiper juga pindah ke slide ini
             $this->dispatch('update-swiper', selectedIndex: $this->selectedIndex);
         }
+        // foreach ($this->highlights as $index => $highlight) {
+        //     if ($highlight->id == $this->tagId) {
+        //         $this->initialSlideIndex = $index;
+        //         break;
+        //     }
+        // }
 
         session()->forget('selectedIndex'); // Hapus setelah dipakai
     }

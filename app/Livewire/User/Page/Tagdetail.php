@@ -7,7 +7,9 @@ use App\Models\Coments;
 use App\Models\Like;
 use App\Models\Post;
 use App\Models\Report;
+use App\Models\Tag;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -33,10 +35,17 @@ class Tagdetail extends Component
     public $friends;
     public $alreadyReported = false;
     public $tags;
+    public $tag;
+    public $tag_id;
+    public $user;
+    public $parent_id = null;
+    public $show_replies = [];
 
     public $post_id;
     public $teks_komentar;
     public $komentar_list = [];
+    public $selectedImage;
+
 
     public $refreshInterval = 10000;
 
@@ -54,7 +63,23 @@ class Tagdetail extends Component
     public function mount($userid, $tagId = null)
     {
         // Simpan userId
-        $this->userId = $userid;
+        // $this->userId = $userid;
+
+        $this->userId = (int) $userid; // pastikan integer
+
+        $this->user = User::find($userid);
+        // dd([
+        //     'this->userId' => $this->userId,
+        //     'auth()->id()' => auth()->id(),
+        // ]);
+
+        $this->friends = DB::table('friendships')
+            ->join('users', 'friendships.friend_id', '=', 'users.id')
+            ->where('friendships.user_id', Auth::id())
+            ->where('friendships.status', 'approved')
+            ->select('users.id', 'users.username', 'users.avatar')
+            ->get();
+
 
         // Ambil semua post berdasarkan post_id di tabel tag
         $this->posts = Post::whereIn('id', function ($query) {
@@ -69,13 +94,13 @@ class Tagdetail extends Component
                 $this->post_id = $tag->post_id; // Ambil post_id dari tag
             }
         }
+        // dd($tagId);
 
         // Muat komentar jika post_id tersedia
         if ($this->post_id) {
             $this->muatKomentar();
         }
     }
-
 
 
     // public function setPostId($id)
@@ -86,7 +111,15 @@ class Tagdetail extends Component
     public function setPostId($id)
     {
         $this->post_id = $id;
+        dd($this->post_id);
         logger()->info('Post ID berhasil disimpan: ' . $this->post_id);
+    }
+
+    public function setTagId($id)
+    {
+        $this->tag_id = $id;
+        // dd($this->tag_id);
+        logger()->info('Post ID berhasil disimpan: ' . $this->tag_id);
     }
 
     public function setPostId2($id)
@@ -96,10 +129,38 @@ class Tagdetail extends Component
         $this->muatKomentar($this->post_id);
     }
 
+    public function waktuSingkat($timestamp)
+    {
+        $waktu = Carbon::parse($timestamp);
+        $selisih = $waktu->diffInSeconds(now());
+
+        if ($selisih < 60) {
+            return "$selisih detik";
+        } elseif ($selisih < 3600) {
+            return floor($selisih / 60) . " menit";
+        } elseif ($selisih < 86400) {
+            return floor($selisih / 3600) . " jam";
+        } elseif ($selisih < 604800) {
+            return floor($selisih / 86400) . " hari";
+        } elseif ($selisih < 2419200) {
+            return floor($selisih / 604800) . " minggu";
+        } elseif ($selisih < 29030400) {
+            return floor($selisih / 2419200) . " bulan";
+        } else {
+            return floor($selisih / 29030400) . " tahun";
+        }
+    }
+
 
     public function isPostInBanding($postId)
     {
         return Banding::where('post_id', $postId)->exists();
+    }
+
+    public function setImageModal($image)
+    {
+        $this->selectedImage = $image;
+        $this->dispatch('openImageModal');
     }
 
     public function report()
@@ -272,6 +333,11 @@ class Tagdetail extends Component
 
     public function tambahKomentar()
     {
+        if (!$this->teks_komentar) {
+            session()->flash('pesan_error', 'Komentar tidak boleh kosong!');
+            return;
+        }
+
         $this->validate([
             'teks_komentar' => 'required|min:1'
         ], [
@@ -284,29 +350,56 @@ class Tagdetail extends Component
             return;
         }
 
-        // // Pastikan post_id tidak null
-        // if (!$this->post_id) {
-        //     session()->flash('pesan_error', 'Terjadi kesalahan, post tidak ditemukan.');
-        //     return;
-        // }
-
-        // dd($this->post_id);
+        // dd($this->parent_id);
 
         Coments::create([
             'user_id' => Auth::id(),
-            'post_id' => $this->post_id, // Ambil dari property
+            'post_id' => $this->post_id,
             'content' => $this->teks_komentar,
+            'parent_id' => $this->parent_id, // Simpan jika ini balasan
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->teks_komentar = '';
+        $this->parent_id = null; // Reset setelah menambah komentar
 
-        // Muat ulang komentar
         $this->muatKomentar();
-
-        // Emit event agar komponen lain yang mendengarkan bisa refresh juga
         $this->dispatch('komentarDitambahkan', $this->post_id);
     }
 
+    public function batal()
+    {
+        $this->parent_id = null;
+    }
+
+    public function setReply($id)
+    {
+        $this->parent_id = $id;
+        // dd($this->parent_id);
+    }
+
+    public function toggleReplies($id)
+    {
+        if (isset($this->show_replies[$id])) {
+            unset($this->show_replies[$id]); // Sembunyikan balasan jika sudah terbuka
+        } else {
+            $this->show_replies[$id] = true; // Tampilkan balasan jika belum terbuka
+        }
+    }
+
+    public function hapusTag($id)
+    {
+        $tag = Tag::find($id);
+
+        if ($tag) {
+            $tag->delete();
+
+            $this->alert('success', 'Berhasil, Tag berhasil dihapus');
+        } else {
+            $this->alert('error', 'Gagal, Tag tidak ditemukan');
+        }
+    }
 
 
     public function render()

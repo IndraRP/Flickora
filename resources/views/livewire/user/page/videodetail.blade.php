@@ -125,13 +125,18 @@
                                                     Download
                                                 </a>
 
-                                                <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
-                                                    Edit
-                                                </a>
+                                                @auth
+                                                    @if ($video->user_id === auth()->id())
+                                                        <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
+                                                            Edit
+                                                        </a>
 
-                                                <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
-                                                    Hapus
-                                                </a>
+                                                        <a class="dropdown-item bg-dark fs-10 text-white" data-bs-toggle="modal" data-bs-target="#hapusModal" wire:click="setVideoId({{ $video->id }})" style="cursor: pointer;">
+                                                            Hapus
+                                                        </a>
+                                                    @endif
+                                                @endauth
+
 
                                                 <a class="dropdown-item bg-dark fs-10 text-white" data-bs-toggle="modal" data-bs-target="#laporModal" wire:click.prevent="setVideoId({{ $video->id }})">
                                                     Laporkan
@@ -222,7 +227,7 @@
                             </div>
                             <p class="fs-6 mb-2 text-center">Komentar</p>
                             <hr class="my-1" style="border-color: white;">
-                            <div class="mt-3" style="height: 315px; overflow-y: auto;" id="komentar-container">
+                            <div class="mb-4 mt-3" style="height: 315px; overflow-y: auto;" id="komentar-container">
                                 @if (count($komentar_list) > 0)
                                     @foreach ($komentar_list->where("parent_id", null) as $komentar)
                                         <div class="d-flex align-items-start mt-3">
@@ -280,22 +285,22 @@
                                 @endif
                             </div>
 
-                            <div class="d-block pt-2">
+                            <div class="d-block fixed-bottom mx-3 pb-3" style="margin-top:-65px; padding-top: 10px; background-color:#1C1C1C;">
                                 @if ($parent_id)
-                                    <div style="margin-top: -25px;" class="d-flex align-items-center mb-2">
+                                    <div style="margin-top: -25px; background-color: #1C1C1C;" class="d-flex align-items-center mb-0 rounded p-2">
                                         <p class="text-secondary fs-7 mb-0">Membalas komentar...</p>
-                                        <p class="fs-7 text-danger mb-0 ms-auto" wire:click="batal()" style="font-weight: 600;">batalkan membalas</p>
+                                        <p class="fs-7 text-danger mb-0 ms-auto" wire:click="batal()" style="font-weight: 600; cursor: pointer;">batalkan membalas</p>
                                     </div>
                                 @endif
 
 
                                 <div class="d-flex align align-items-center">
-                                    @if (session()->has("pesan_error"))
+                                    {{-- @if (session()->has("pesan_error"))
                                         <div class="alert alert-danger w-100 p-1">
                                             {{ session("pesan_error") }}
                                         </div>
-                                    @endif
-                                    <input type="text" class="form-control me-2 bg-transparent text-white" id="input-komentar" wire:model.defer="teks_komentar" placeholder="Tulis komentar..." style="flex: 1;" wire:keydown.enter="tambahKomentar" />
+                                    @endif --}}
+                                    <input type="text" class="form-control me-2 text-white" style="background-color: #1C1C1C" id="input-komentar" wire:model.defer="teks_komentar" placeholder="Tulis komentar..." style="flex: 1;" wire:keydown.enter="tambahKomentar" />
                                     <button class="btn border-0" wire:click="tambahKomentar()" style="background: linear-gradient(to right, #1547CE, #3d6eaf, #4c89d4);">
                                         <i class="fa-solid fa-paper-plane fs-5 text-white" style="margin:3px;"></i>
                                     </button>
@@ -318,6 +323,33 @@
                             <source id="videoSource" src="" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="hapusModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content bg-dark">
+                    <div class="modal-body py-5">
+                        <div class="d-flex justify-content-center">
+                            <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-2 text-center">
+                            <p class="fs-6 text-white">Apakah anda yakin ingin menghapus postingan video ini?</p>
+                        </div>
+
+
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="submit" wire:click="hapus()" class="btn btn-danger text-white" style="width: 100px; height: 40px;">
+                                Ya, Yakin
+                            </button>
+                            <button type="button" class="btn border-primary ms-3 border text-white" style="width: 100px; height: 40px;" data-bs-dismiss="modal" aria-label="Close">
+                                Tidak
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>

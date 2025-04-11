@@ -73,8 +73,8 @@
                 </div>
 
                 <div class="swiper-wrapper">
-                    @foreach ($highlights as $highlight)
-                        <div class="swiper-slide" data-id="{{ $highlight->id }}">
+                    @foreach ($highlights as $index => $highlight)
+                        <div class="swiper-slide" data-id="{{ $highlight->id }}" data-index="{{ $index }}">
                             <div class="slide-background" style="background-image: url('{{ asset("storage/" . $highlight->image) }}');">
 
                                 <div class="d-flex px-2 py-2" style="background-color: #0c0b0bcf;">
@@ -85,7 +85,7 @@
                                         <img style="width: 40px; height: 40px;" class="rounded-pill" src="{{ asset("storage/" . $user->avatar) }}">
                                         <div class="d-block ms-2">
                                             <p class="fs-10 mb-0">{{ $user->name }}</p>
-                                            <p class="fs-8 mb-0">{{ $highlight->created_at->format("d m Y") }}</p>
+                                            <p class="fs-8 mb-0">{{ $highlight->created_at->format("d M Y") }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -132,134 +132,151 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             setTimeout(() => {
+                // Ambil ID highlight langsung dari URL path
+                const currentUrl = window.location.pathname;
+                const urlParts = currentUrl.split('/');
+                const targetHighlightId = parseInt(urlParts[urlParts.length - 1]);
+
                 const highlights = document.querySelectorAll(".swiper-slide").length;
                 let progressBars = [];
                 let currentIndex = 0;
-                let autoplayDuration = 5000; // 5 seconds per slide
+                let autoplayDuration = 5000;
+                let autoplayTimer = null;
+                let swiperInitialized = false;
+
+                // Cari indeks slide berdasarkan ID highlight dari URL
+                const slides = document.querySelectorAll(".swiper-slide");
+                slides.forEach((slide, index) => {
+                    if (parseInt(slide.getAttribute("data-id")) === targetHighlightId) {
+                        currentIndex = index;
+                    }
+                });
 
                 // Initialize progress bars
                 for (let i = 0; i < highlights; i++) {
                     progressBars.push(document.getElementById(`progress-${i}`));
                 }
 
-                // Function to reset all progress bars
-                function resetProgressBars() {
-                    progressBars.forEach((bar, index) => {
-                        if (index < currentIndex) {
+                // Function to start progress for current slide
+                function startProgress(index) {
+                    // Reset timer if exists
+                    if (autoplayTimer) {
+                        clearTimeout(autoplayTimer);
+                    }
+
+                    // Reset all progress bars
+                    progressBars.forEach((bar, i) => {
+                        if (i < index) {
+                            // Set previous slides to completed
+                            bar.style.width = '100%';
                             bar.classList.add('progress-complete');
                             bar.classList.remove('progress-active');
-                        } else if (index === currentIndex) {
-                            bar.classList.remove('progress-complete');
+                        } else if (i === index) {
+                            // Start current slide animation
                             bar.style.width = '0';
-                            setTimeout(() => {
-                                bar.classList.add('progress-active');
-                            }, 50);
+                            bar.classList.remove('progress-complete');
+
+                            // Force reflow before adding the active class
+                            void bar.offsetWidth;
+
+                            // Start animation
+                            bar.classList.add('progress-active');
                         } else {
-                            bar.classList.remove('progress-complete');
-                            bar.classList.remove('progress-active');
+                            // Reset future slides
                             bar.style.width = '0';
+                            bar.classList.remove('progress-active');
+                            bar.classList.remove('progress-complete');
                         }
                     });
+
+                    // Set timer for next slide
+                    autoplayTimer = setTimeout(() => {
+                        if (currentIndex < highlights - 1) {
+                            currentIndex++;
+                        } else {
+                            currentIndex = 0;
+                        }
+
+                        // Move swiper to next slide
+                        if (swiper && swiperInitialized) {
+                            swiper.slideTo(currentIndex);
+                        }
+                    }, autoplayDuration);
                 }
 
-
-
+                // Initialize Swiper
                 var swiper = new Swiper(".swiper-container", {
-                    loop: true,
+                    loop: false,
                     slidesPerView: 1,
-                    autoplay: {
-                        delay: autoplayDuration,
-                        disableOnInteraction: false,
-                    },
-                    observer: true, // Memastikan swiper tetap bisa mendeteksi perubahan
+                    observer: true,
                     observeParents: true,
+                    initialSlide: currentIndex,
+                    speed: 300,
+                    allowTouchMove: true,
                     pagination: {
                         el: ".swiper-pagination",
                         clickable: true,
                     },
                     on: {
-                        slideChangeTransitionEnd: function() {
-                            currentIndex = swiper.realIndex;
-                            resetProgressBars();
-                            swiper.autoplay.start(); // Pastikan autoplay tetap berjalan
-
-                            // Emit ke Livewire jika ada
-                            if (typeof Livewire !== "undefined" && Livewire.emit) {
-                                Livewire.emit("updateSelectedIndex", currentIndex);
-                            }
-                        },
                         init: function() {
-                            currentIndex = 0;
-                            resetProgressBars();
+                            // Setelah swiper selesai inisialisasi
+                            swiperInitialized = true;
+                            // Pastikan sudah di slide yang tepat
+                            this.slideTo(currentIndex, 0, false);
+                        },
+                        afterInit: function() {
+                            // Delay sedikit untuk memastikan slide benar-benar aktif
+                            setTimeout(() => {
+                                startProgress(currentIndex);
+                            }, 300);
+                        },
+                        slideChangeTransitionEnd: function() {
+                            // Update current index setelah transisi slide selesai
+                            currentIndex = this.activeIndex;
+                            // Restart progress animation
+                            startProgress(currentIndex);
                         }
                     }
                 });
 
-                // Restart autoplay setelah setiap swipe manual
-                swiper.on('touchEnd', function() {
-                    swiper.autoplay.start();
-                });
+                // Backup untuk memastikan progress bar mulai berjalan
+                // Kadang event afterInit tidak terpicu dengan benar
+                setTimeout(() => {
+                    if (!autoplayTimer) {
+                        startProgress(currentIndex);
+                    }
+                }, 500);
 
-                // Klik pada progress bar untuk pindah slide
+                // Handle touch events
+                const swiperContainer = document.querySelector('.swiper-container');
+                if (swiperContainer) {
+                    swiperContainer.addEventListener('touchstart', function() {
+                        // Pause autoplay & animation when touched
+                        if (autoplayTimer) {
+                            clearTimeout(autoplayTimer);
+                        }
+                        if (progressBars[currentIndex]) {
+                            progressBars[currentIndex].style.transition = 'none';
+                        }
+                    });
+
+                    swiperContainer.addEventListener('touchend', function() {
+                        // Resume progress
+                        if (progressBars[currentIndex]) {
+                            progressBars[currentIndex].style.transition = 'width 5s linear';
+                            startProgress(currentIndex);
+                        }
+                    });
+                }
+
+                // Click on progress bar to navigate
                 progressBars.forEach((bar, index) => {
                     bar.parentElement.addEventListener('click', () => {
                         swiper.slideTo(index);
+                        currentIndex = index;
+                        startProgress(currentIndex);
                     });
                 });
-
-                // Pastikan modal terbuka dengan Swiper yang sinkron
-                window.addEventListener("open-modal", (event) => {
-                    var modal = new bootstrap.Modal(document.getElementById("highlightModal"));
-                    modal.show();
-
-                    setTimeout(() => {
-                        if (swiper) {
-                            swiper.update();
-
-                            let selectedIndex = 0;
-                            let slides = document.querySelectorAll(".swiper-slide");
-                            slides.forEach((slide, index) => {
-                                if (slide.getAttribute("data-id") == event.detail.highlightId) {
-                                    selectedIndex = index;
-                                }
-                            });
-
-                            swiper.slideTo(selectedIndex, 0);
-                            currentIndex = swiper.realIndex;
-                            resetProgressBars();
-                        }
-                    }, 300);
-                });
-
-                // Update swiper jika ada perubahan dari Livewire
-                window.addEventListener("update-swiper", (event) => {
-                    if (swiper) {
-                        swiper.slideTo(event.detail.selectedIndex, 300);
-                        currentIndex = swiper.realIndex;
-                        resetProgressBars();
-                    }
-                });
-
-                // Sinkronisasi Swiper saat modal ditampilkan
-                document.getElementById("highlightModal").addEventListener("shown.bs.modal", function() {
-                    if (swiper) {
-                        swiper.update();
-                        currentIndex = swiper.realIndex;
-                        resetProgressBars();
-                    }
-                });
-
-                // Pause autoplay saat disentuh agar tidak terganggu
-                document.querySelector('.swiper-container').addEventListener('touchstart', function() {
-                    swiper.autoplay.stop();
-                    progressBars[currentIndex].style.transition = 'none';
-                });
-
-                document.querySelector('.swiper-container').addEventListener('touchend', function() {
-                    swiper.autoplay.start();
-                    progressBars[currentIndex].style.transition = 'width 5s linear';
-                });
-
             }, 300);
         });
     </script>

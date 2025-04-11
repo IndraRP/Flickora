@@ -10,6 +10,7 @@ use App\Models\Like;
 use App\Models\Likes_Highlight;
 use App\Models\Report;
 use App\Models\Tag;
+use App\Models\Video;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
@@ -30,6 +31,7 @@ class UserDetail extends Component
     public $isPrivate;
     public $isFriend;
     public $tags;
+    public $videos;
     public $totalLikes;
 
     protected $listeners = ['refreshComponent' => '$refresh'];
@@ -45,6 +47,7 @@ class UserDetail extends Component
         $this->avatar = $this->user->avatar;
         $this->postsCount = Post::where('user_id', $this->userId)->count();
         $this->tags = Tag::where('user_id', $this->userId)->with('post')->get();
+        $this->videos = Video::where('user_id', $this->userId)->with('post')->get();
 
         // dd($this->userId);
         $likesCount = Like::where('user_id', $this->userId)->count();
@@ -103,6 +106,19 @@ class UserDetail extends Component
             session()->put('current_user_id', $tag->user_id);
             session()->put('current_tag_id', $tagId);
             return redirect()->route('tagdetail', ['userid' => $tag->user_id, 'tagId' => $tagId]);
+        } else {
+            return redirect()->route('home')->with('error', 'Tag tidak ditemukan');
+        }
+    }
+
+    public function saveUserAndVideoIdToSession($videoId)
+    {
+        $video = Video::find($videoId);
+
+        if ($video) {
+            session()->put('current_user_id', $video->user_id);
+            session()->put('current_tag_id', $videoId);
+            return redirect()->route('videodetail', ['userid' => $video->user_id, 'videoId' => $videoId]);
         } else {
             return redirect()->route('home')->with('error', 'Tag tidak ditemukan');
         }

@@ -93,13 +93,17 @@
                                             Download Gambar
                                         </a>
 
-                                        <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;">
-                                            Edit
-                                        </a>
+                                        @auth
+                                            @if ($post->user_id === auth()->id())
+                                                <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#editModal" wire:click="setPostId({{ $post->id }})">
+                                                    Edit
+                                                </a>
 
-                                        <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;">
-                                            Hapus
-                                        </a>
+                                                <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#hapusModal" wire:click="setPostId({{ $post->id }})">
+                                                    Hapus
+                                                </a>
+                                            @endif
+                                        @endauth
 
                                         <a class="dropdown-item bg-dark fs-10 text-white" data-bs-toggle="modal" data-bs-target="#laporModal" wire:click="setPostId({{ $post->id }})">
                                             Laporkan
@@ -151,11 +155,14 @@
                             </div>
                         </div>
 
+
                         <!-- Informasi User -->
                         <div class="d-flex align-items-center rounded px-3 pt-2" style="margin-top: -55px; margin-right: 120px; background: linear-gradient(135deg, rgb(28, 28, 28), rgba(58, 58, 58, 0.773), rgba(58, 58, 58, 0.313)); height: 55px;">
                             <div class="d-flex" style="margin-bottom: 10px;  margin-top: 6px;">
                                 <img src="{{ asset("storage/" . $post->user->avatar) }}" class="rounded-pill" style="width: 35px; height: 35px; object-fit: cover;">
-                                <p class="fs-10 mb-2 ms-2 text-white" style="margin-top: 9px;">{{ $post->user->name }}</p>
+                                <p class="fs-10 mb-2 ms-2 text-white" style="margin-top: 9px;" title="{{ $post->user->name }}">
+                                    {{ Str::limit($post->user->name, 15, "...") }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -216,6 +223,7 @@
         </div>
     </div>
 
+
     <!-- Modal Lapor-->
     <div class="modal fade" id="laporModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -234,7 +242,7 @@
                         <input type="hidden" wire:model="postId">
                         <div class="mb-3">
                             <label for="additional-info" class="form-label fs-10 text-white">Alasan</label>
-                            <textarea id="additional-info" class="form-control bg-dark border-primary text-white" rows="3" wire:model="additionalInfo"></textarea>
+                            <textarea id="additional-info" class="form-control bg-dark border-primary text-white" required rows="3" wire:model="additionalInfo"></textarea>
                             @error("additionalInfo")
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -250,6 +258,65 @@
                         </div>
                     </form>
 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hapus-->
+    <div class="modal fade" id="hapusModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content bg-dark">
+                <div class="modal-body py-5">
+                    <div class="d-flex justify-content-center">
+                        <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center mt-2 text-center">
+                        <p class="fs-6 text-white">Apakah anda yakin ingin menghapus postingan ini?</p>
+                    </div>
+
+
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="submit" wire:click="hapus()" class="btn btn-danger text-white" style="width: 100px; height: 40px;">
+                            Ya, Yakin
+                        </button>
+                        <button type="button" class="btn border-primary ms-3 border text-white" style="width: 100px; height: 40px;" data-bs-dismiss="modal" aria-label="Close">
+                            Tidak
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content bg-dark">
+                <div class="modal-body py-1">
+                    <p class="fs-6 mb-0 pt-3 text-white">Edit Postingan</p>
+                    <div class="d-flex justify-content-center mt-2 text-center">
+                        @if ($selectedImage)
+                            <img src="{{ $selectedImage }}" class="img-fluid rounded" style="max-height: 450px; width: 400px; object-fit:cover" alt="Gambar Postingan">
+                        @endif
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <label class="mb-1 text-white">Edit Deskripsi</label>
+                        <textarea wire:model.defer="selectedDescription" class="form-control bg-dark text-white" rows="4"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-center my-3">
+                        <button type="button" class="btn border-primary border text-white" style="width: 100px; height: 40px;" data-bs-dismiss="modal">
+                            Batal
+                        </button>
+
+                        <button type="submit" wire:click="simpanPerubahan" class="btn btn-primary ms-3 text-white" style="width: 100px; height: 40px;">
+                            Simpan
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -324,7 +391,7 @@
                             @endif
                         </div>
 
-                        <div class="d-block pt-2">
+                        <div class="d-block fixed-bottom mx-3 pb-3 pt-2" style="background-color: #1C1C1C">
                             @if ($parent_id)
                                 <div style="margin-top: -25px;" class="d-flex align-items-center mb-2">
                                     <p class="text-secondary fs-7 mb-0">Membalas komentar...</p>
@@ -467,7 +534,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Modal share-->
     <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>

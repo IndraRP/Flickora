@@ -10,14 +10,7 @@ class Banding_Video extends Model
     protected $table = 'bandings_video';
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'video_id',
-        'reports_video_id',
-        'alasan',
-        'bukti',
-        'report_reason'
-    ];
+    protected $guarded = [];
 
     /**
      * Relasi ke User

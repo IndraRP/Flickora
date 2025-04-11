@@ -16,6 +16,7 @@ use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class Videodetail extends Component
 {
@@ -103,6 +104,32 @@ class Videodetail extends Component
         $this->video_id = $id;
         logger()->info('Post ID berhasil disimpan: ' . $this->video_id);
         $this->muatKomentar($this->video_id);
+    }
+
+    public function hapus()
+    {
+        $video = Video::find($this->videoId);
+
+
+        if ($video) {
+            // Hapus gambar jika ada
+            if ($video->image && Storage::disk('public')->exists($video->image)) {
+                Storage::disk('public')->delete($video->image);
+            }
+
+            // Hapus video jika ada
+            if ($video->video && Storage::disk('public')->exists($video->video)) {
+                Storage::disk('public')->delete($video->video);
+            }
+
+            // Hapus record dari database
+            $video->delete();
+
+            $this->alert('success', 'Berhasil, Postingan berhasil dihapus');
+            return redirect()->to(request()->header('Referer'));
+        } else {
+            $this->alert('error', 'Gagal, Postingan gagal dihapus');
+        }
     }
 
     public function muatKomentar($video_id = null)

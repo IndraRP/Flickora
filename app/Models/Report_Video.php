@@ -9,7 +9,7 @@ class Report_Video extends Model
 {
     use HasFactory;
     protected $table = 'reports_video';
-    protected $fillable = ['video_id', 'user_id', 'alasan'];
+    protected $guarded = [];
 
     // Relasi ke Post
     public function video()

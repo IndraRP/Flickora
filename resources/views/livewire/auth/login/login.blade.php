@@ -4,7 +4,35 @@
         <img src="{{ asset("images/logo2.png") }}" style="width: 35px; height: 35px; margin-left: 40px;">
     </div>
 
-    <div style="border-top-left-radius: 30px; border-top-right-radius: 30px; background-color:rgb(21, 21, 33); height: 540px; padding-top: 45px; padding-left: 40px; padding-right: 40px;">
+    <style>
+        @media (min-width: 992px) {
+            #responsive-box {
+                width: 50% !important;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            #responsive-box {
+                width: 100% !important;
+            }
+        }
+    </style>
+
+    <div id="responsive-box" style="
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        border-top-left-radius: 30px; 
+        border-top-right-radius: 30px; 
+        background-color: rgb(21, 21, 33); 
+        height: 540px; 
+        padding-top: 45px; 
+        padding-left: 40px; 
+        padding-right: 40px; 
+        box-sizing: border-box;
+    ">
+
+
         <form wire:submit.prevent="login">
             <h1 class="mb-3 text-center text-white">Masuk</h1>
             <div class="mb-2">

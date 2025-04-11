@@ -15,18 +15,33 @@
 
                 <ul class="dropdown-menu bg-dark">
                     <div>
-                        <a class="dropdown-item bg-dark fs-10 text-white">
+                        <a class="dropdown-item bg-dark fs-10 mt-2 text-white">
                             Hapus dari Privat
                         </a>
                         {{-- <input type="file" id="imageUpload" wire:model="page_image" style="display: none;"> --}}
                     </div>
 
                     <div>
-                        <a class="dropdown-item bg-dark fs-10 text-white">
+                        <a class="dropdown-item bg-dark fs-10 mt-2 text-white">
                             Bersihkan Pesan
                         </a>
                         {{-- <input type="file" id="backgroundUpload" wire:model="background" style="display: none;"> --}}
                     </div>
+
+                    <div>
+                        <a class="dropdown-item bg-dark fs-10 mt-2 text-white">
+                            Akhiri Obrolan
+                        </a>
+                        {{-- <input type="file" id="backgroundUpload" wire:model="background" style="display: none;"> --}}
+                    </div>
+
+                    <div>
+                        <a class="dropdown-item bg-dark fs-10 my-2 text-white">
+                            Laporkan
+                        </a>
+                        {{-- <input type="file" id="backgroundUpload" wire:model="background" style="display: none;"> --}}
+                    </div>
+
                 </ul>
             </div>
 
@@ -39,7 +54,7 @@
         </div>
 
         <div class="d-flex justify-content-end mt-2">
-            <div style="max-width: 250px; background-color:#000b6d" class="rounded px-3 pt-3">
+            <div style="max-width: 250px; background-color:#1547CE" class="rounded px-3 pt-3">
                 <p class="fs-10 text-end" style="color: aliceblue">
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum, vero!
                 </p>
@@ -47,7 +62,7 @@
         </div>
 
         <div class="d-flex justify-content-end mt-2">
-            <div style="max-width: 250px; background-color:#000b6d" class="rounded px-3 pt-3">
+            <div style="max-width: 250px; background-color:#1547CE" class="rounded px-3 pt-3">
                 <p class="fs-10 text-end" style="color: aliceblue">
                     Lorem ipsum dolor sit amet consectetur.
                 </p>
@@ -63,7 +78,7 @@
         </div>
 
         <div class="d-flex justify-content-end mt-2">
-            <div style="max-width: 250px; background-color:#000b6d" class="rounded px-3 pt-3">
+            <div style="max-width: 250px; background-color:#1547CE" class="rounded px-3 pt-3">
                 <p class="fs-10 text-end" style="color: aliceblue">
                     Gasssss
                 </p>

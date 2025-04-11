@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth\Login;
 
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -39,7 +40,19 @@ class Login extends Component
         }
 
         Auth::login($user, $this->remember);
-        return redirect()->to('/chatify');
+        // Redirect berdasarkan role
+        return $this->redirectBasedOnRole($user);
+    }
+
+    private function redirectBasedOnRole($user)
+    {
+        if ($user->role === Role::Admin) {
+            return redirect('/admin');
+        } elseif ($user->role === Role::User) {
+            return redirect()->route('chatify');
+        }
+
+        return redirect('/chatify');
     }
 
     public function render()

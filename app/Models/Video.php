@@ -23,6 +23,13 @@ class Video extends Model
         return $this->belongsTo(User::class);
     }
 
+    // Model Video.php
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
+
+
     public function coment_videos()
     {
         return $this->hasMany(Comment_Videos::class);

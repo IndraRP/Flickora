@@ -28,6 +28,8 @@
                         <small>Mencari...</small>
                     </div>
 
+
+
                     <!-- Hasil pencarian -->
                     @if (!empty($searchResults) && count($searchResults) > 0)
                         <div class="bg-secondary absolute z-10 mt-1 w-full rounded p-2">
@@ -56,16 +58,16 @@
                             </span>
                         @endforeach
                     </div>
+                    </>
                 </div>
+                {{-- <p class="text-white">Debug Search Query: {{ $debugSearchQuery }}</p> --}}
+
             </div>
-            {{-- <p class="text-white">Debug Search Query: {{ $debugSearchQuery }}</p> --}}
 
-        </div>
-
-        <div class="d-flex justify-content-center border-0 pb-5 pt-3">
-            <button wire:click="savePost" class="btn rounded border-0 text-white" style="background: linear-gradient(to right, #1547CE, #3d6eaf,  #4c89d4); width: 200px;">
-                Upload
-            </button>
+            <div class="d-flex justify-content-center border-0 pb-5 pt-3">
+                <button wire:click="savePost" class="btn rounded border-0 text-white" style="background: linear-gradient(to right, #1547CE, #3d6eaf,  #4c89d4); width: 200px;">
+                    Upload
+                </button>
+            </div>
         </div>
     </div>
-</div>

@@ -105,7 +105,7 @@
     </div>
 
 
-    <div class="d-flex align-items-center fixed-bottom px-3 py-3">
+    <div class="d-flex align-items-center fixed-bottom px-3 py-3" style="background-color: #171616">
         @if (session()->has("pesan_error"))
             <div class="alert alert-danger w-100 p-1">
                 {{ session("pesan_error") }}

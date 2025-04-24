@@ -32,7 +32,7 @@
 
                     <!-- Hasil pencarian -->
                     @if (!empty($searchResults) && count($searchResults) > 0)
-                        <div class="bg-secondary absolute z-10 mt-1 w-full rounded p-2">
+                        <div class="bg-dark border-primary absolute z-10 mt-1 w-full rounded border p-2">
                             @foreach ($searchResults as $friend)
                                 <div class="hover:bg-primary cursor-pointer rounded p-2 text-white" wire:click="addTaggedUser({{ $friend["id"] }})">
                                     <div class="d-flex align-items-center">
@@ -43,7 +43,7 @@
                                                 <span>{{ substr($friend["name"], 0, 1) }}</span>
                                             </div>
                                         @endif
-                                        <span>{{ $friend["name"] }}</span>
+                                        <span class="ms-2">{{ $friend["name"] }}</span>
                                     </div>
                                 </div>
                             @endforeach
@@ -58,16 +58,16 @@
                             </span>
                         @endforeach
                     </div>
-                    </>
                 </div>
-                {{-- <p class="text-white">Debug Search Query: {{ $debugSearchQuery }}</p> --}}
-
             </div>
+            {{-- <p class="text-white">Debug Search Query: {{ $debugSearchQuery }}</p> --}}
 
-            <div class="d-flex justify-content-center border-0 pb-5 pt-3">
-                <button wire:click="savePost" class="btn rounded border-0 text-white" style="background: linear-gradient(to right, #1547CE, #3d6eaf,  #4c89d4); width: 200px;">
-                    Upload
-                </button>
-            </div>
+        </div>
+
+        <div class="d-flex justify-content-center border-0 pb-5 pt-3">
+            <button wire:click="savePost" class="btn rounded border-0 text-white" style="background: linear-gradient(to right, #1547CE, #3d6eaf,  #4c89d4); width: 200px;">
+                Upload
+            </button>
         </div>
     </div>
+</div>

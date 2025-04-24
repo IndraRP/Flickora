@@ -50,7 +50,7 @@
 </head>
 
 <body class="no-right-click text-gray-900" style="background-color: #1C1C1C; font-family: 'Ubuntu', sans-serif;">
-    @if (!in_array(Route::currentRouteName(), ["login", "alluser", "userdetail", "postdetail", "notif", "friendships", "highdetail", "upload_post", "signup", "tagdetail", "videodetail", "chat_detail", "grup_detail"]))
+    @if (!in_array(Route::currentRouteName(), ["login", "alluser", "userdetail", "postdetail", "notif", "friendships", "highdetail", "upload_post", "signup", "tagdetail", "videodetail", "chat_detail", "grup_detail", "forgot-password", "password.reset"]))
         @include("layouts.navbar")
     @endif
 

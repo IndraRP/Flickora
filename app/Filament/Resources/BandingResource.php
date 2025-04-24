@@ -44,7 +44,7 @@ class BandingResource extends Resource
                 ImageColumn::make('bukti')
                     ->label('Bukti')
                     ->square()
-                    ->height(80)
+                    ->height(120)
                     ->width(120)
                     ->getStateUsing(function ($record) {
                         return $record->bukti ? asset("storage/{$record->bukti}") : asset("storage/users-avatar/avatar.png");

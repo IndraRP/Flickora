@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\UserMenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -31,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             // ->brandLogoHeight('1.75rem')
             ->login()
             ->colors([
-                'primary' => '#012998',
+                'primary' => '#003ad8',
             ])
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -54,7 +55,19 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+
+                'auth',
+                // Tambahkan middleware role Anda dengan parameter yang sesuai
+                'role:admin', // Contoh untuk role admin
             ])
+
+            ->userMenuItems([
+                UserMenuItem::make()
+                    ->label('Forgot Password')
+                    ->url(('/forgot-password')) // default route Laravel
+                    ->icon('heroicon-o-key'),
+            ])
+
             ->authMiddleware([
                 Authenticate::class,
             ]);

@@ -56,7 +56,7 @@ class ReportVideoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
-                Tables\Columns\TextColumn::make('post_id')->label('Post ID')->sortable(),
+                Tables\Columns\TextColumn::make('video_id')->label('Video ID')->sortable(),
                 Tables\Columns\TextColumn::make('user_id')->label('User ID')->sortable(),
                 Tables\Columns\TextColumn::make('alasan')->label('Alasan')->sortable(),
                 Tables\Columns\BadgeColumn::make('approved')

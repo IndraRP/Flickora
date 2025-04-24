@@ -22,7 +22,17 @@
             transition: max-height 0.4s ease-in-out;
             position: relative;
         }
+
+        .modal-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            margin: 0;
+        }
     </style>
+
     <style>
         ::placeholder {
             color: white !important;
@@ -121,13 +131,13 @@
                                             {{-- {{ $post->id }} --}}
 
                                             <ul class="dropdown-menu bg-dark" wire:ignore.self>
-                                                <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
+                                                <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;">
                                                     Download
                                                 </a>
 
                                                 @auth
                                                     @if ($video->user_id === auth()->id())
-                                                        <a class="dropdown-item bg-dark fs-10 text-white" wire:click="download({{ $video->id }})" style="cursor: pointer;">
+                                                        <a class="dropdown-item bg-dark fs-10 text-white" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#editModal" wire:click="setVideoId({{ $video->id }})">
                                                             Edit
                                                         </a>
 
@@ -333,7 +343,13 @@
                 <div class="modal-content bg-dark">
                     <div class="modal-body py-5">
                         <div class="d-flex justify-content-center">
-                            <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                            <div id="lottie2" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" x-data="{ animation: null }" x-init="animation = lottie.loadAnimation({
+                                container: $el,
+                                renderer: 'svg',
+                                loop: true,
+                                autoplay: true,
+                                {{-- path: '{{ asset("images/animation5.json") }}' --}}
+                            });" wire:ignore>
                             </div>
                         </div>
                         <div class="d-flex justify-content-center mt-2 text-center">
@@ -355,22 +371,61 @@
             </div>
         </div>
 
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content bg-dark">
+                    <div class="modal-body py-1">
+                        <p class="fs-6 mb-0 pt-3 text-white">Edit Postingan</p>
+                        <div class="d-flex justify-content-center mt-2 text-center">
+                            @if ($selectedImage)
+                                <video controls class="img-fluid rounded" style="max-height: 450px; width: 400px; object-fit: cover;">
+                                    <source src="{{ $selectedImage }}" type="video/mp4">
+                                    Browser kamu tidak mendukung tag video.
+                                </video>
+                            @endif
+                        </div>
+
+                        <div class="form-group mt-2">
+                            <label class="mb-1 text-white">Edit Deskripsi</label>
+                            <textarea wire:model.defer="selectedDescription" class="form-control bg-dark text-white" rows="4"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-center my-3">
+                            <button type="button" class="btn border-primary border text-white" style="width: 100px; height: 40px;" data-bs-dismiss="modal">
+                                Batal
+                            </button>
+
+                            <button type="submit" wire:click="simpanPerubahan" class="btn btn-primary ms-3 text-white" style="width: 100px; height: 40px;">
+                                Simpan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Video Report/Lapor -->
         <div class="modal fade" id="laporModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content bg-dark">
                     <div class="modal-body py-5">
                         <div class="d-flex justify-content-center">
-                            <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                            <div id="lottie1" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" x-data="{ animation: null }" x-init="animation = lottie.loadAnimation({
+                                container: $el,
+                                renderer: 'svg',
+                                loop: true,
+                                autoplay: true,
+                                {{-- path: '{{ asset("images/animation2.json") }}' --}}
+                            });" wire:ignore>
                             </div>
                         </div>
                         <div class="d-flex justify-content-center mt-2 text-center">
-                            <p class="fs-6 text-white">Apakah anda yakin ingin melaporkan postingan ini?</p>
+                            <p class="fs-6 text-white">Apakah anda yakin ingin melaporkan postingan video ini?</p>
                         </div>
 
                         <!-- Form untuk melaporkan -->
                         <form wire:submit.prevent="report">
-                            <input type="hidden" wire:model="postId">
+                            <input type="hidden" wire:model="videoId">
                             <div class="mb-3">
                                 <label for="additional-info" class="form-label fs-10 text-white">Alasan</label>
                                 <textarea id="additional-info" class="form-control bg-dark border-primary text-white" rows="3" wire:model="alasan" required></textarea>
@@ -466,18 +521,18 @@
             </div>
         </div>
 
-        {{-- <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
+        <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" wire:ignore.self>
             <div class="modal-dialog modal-bottom" role="document">
                 <div class="modal-content bg-dark" style="height:420px;">
                     <div class="modal-body py-2">
-    
+
                         <p class="fs-5 pt-2 text-white" style="font-weight: 300">Bagikan</p>
-    
+
                         <div class="position-relative w-100">
                             <input type="text" class="messenger-search bg-dark border-primary border text-white" placeholder="Ketik Di sini" wire:model="search" wire:keydown.enter="searchUsers" /> <!-- Menambahkan event Enter -->
                             <i class="bi bi-search position-absolute top-50 translate-middle-y end-0 me-4 text-white"></i>
                         </div>
-    
+
                         <div class="container" style="margin-top: 20px;">
                             @if ($friends->isNotEmpty())
                                 <div class="scrollable-friends" style="max-height: 180px; overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none;">
@@ -501,9 +556,9 @@
                                 <p class="text-center text-white">Tidak ada teman yang ditemukan.</p>
                             @endif
                         </div>
-    
+
                     </div>
-    
+
                     <div class="d-flex justify-content-evenly border-0" style="margin-bottom: 100px;">
                         <div class="d-block text-center" style="width: 60px;" onclick="shareToWhatsApp()">
                             <div class="rounded-pill border border-white p-2" style="width: 56px;">
@@ -511,31 +566,31 @@
                             </div>
                             <p class="fs-8 mb-0 me-2 mt-1 text-white">WhatsApp</p>
                         </div>
-    
+
                         <div class="d-block text-center" style="width: 60px;" onclick="copyToClipboard('{{ url()->current() }}')" wire:click="salin">
                             <div class="rounded-pill border border-white p-2" style="width: 56px;">
                                 <i class="bi bi-copy fs-2 text-white"></i>
                             </div>
                             <p class="fs-8 mb-0 mt-1 text-white">Salin Link</p>
                         </div>
-    
+
                         <div>
-                            <div class="d-block text-center" style="width: 60px;" wire:key="download-{{ $post->id }}" onclick="downloadImage({{ $post->id }})">
+                            <div class="d-block text-center" style="width: 60px;">
                                 <div class="rounded-pill border border-white p-2" style="width: 56px; cursor: pointer;">
                                     <i class="bi bi-download fs-2 text-white"></i>
                                 </div>
                                 <p class="fs-8 mb-0 mt-1 text-white">Unduh</p>
                             </div>
                         </div>
-    
+
                     </div>
-    
-    
-                    {{-- <div class="modal-footer d-flex justify-content-evenly border-0 pt-0" style="padding-bottom: -30px; margin-top: -100px;">
-                    </div> 
+
+
+                    <div class="modal-footer d-flex justify-content-evenly border-0 pt-0" style="padding-bottom: 30px; margin-top: -100px;">
+                    </div>
                 </div>
             </div>
-        </div> --}}
+        </div>
 
     </div>
 </div>
@@ -672,5 +727,25 @@
             // Open WhatsApp in a new window/tab
             window.open(whatsappLink, '_blank');
         }
+    </script>
+
+    <script>
+        var animation = lottie.loadAnimation({
+            container: document.getElementById('lottie2'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '{{ asset("images/animation5.json") }}'
+        });
+    </script>
+
+    <script>
+        var animation = lottie.loadAnimation({
+            container: document.getElementById('lottie1'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '{{ asset("images/animation6.json") }}'
+        });
     </script>
 @endpush

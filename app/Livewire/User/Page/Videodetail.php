@@ -37,6 +37,9 @@ class Videodetail extends Component
     public $alasan;
     public $komentar_list = [];
 
+    public $selectedImage;
+    public $selectedDescription;
+
     public $parent_id = null;
     public $show_replies = [];
 
@@ -68,6 +71,14 @@ class Videodetail extends Component
         if ($this->video_id) {
             $this->muatKomentar();
         }
+
+        $this->friends = DB::table('friendships')
+            ->join('users', 'friendships.friend_id', '=', 'users.id')
+            ->where('friendships.user_id', Auth::id())
+            ->where('friendships.status', 'approved')
+            ->select('users.id', 'users.username', 'users.avatar')
+            ->get();
+
         $this->video_id = $video_id;
     }
 
@@ -75,7 +86,31 @@ class Videodetail extends Component
     {
         $this->video_id = $videoId;
         // $this->muatKomentar(); // Jika ini memang harus dipanggil saat video diubah
+
+        // dd($this->video_id);
+
+        $video = Video::find($videoId);
+        if ($video) {
+            $this->selectedImage = asset('storage/' . $video->video);
+            $this->selectedDescription = $video->description;
+        }
+        // dd($this->selectedImage);
     }
+
+    public function simpanPerubahan()
+    {
+        $video = Video::find($this->videoId);
+        // dd($post);
+
+        if ($video) {
+            $video->content = $this->selectedDescription;
+            $video->save();
+
+            $this->alert('success', 'Berhasil, Postingan berhasil diperbarui');
+            return redirect()->to(request()->header('Referer'));
+        }
+    }
+
 
     public function waktuSingkat($timestamp)
     {
@@ -242,13 +277,10 @@ class Videodetail extends Component
         $this->video_id = Report_Video::where('video_id', $videoId)->value('id');
     }
 
+
     public function report()
     {
-
-        // dd($this->alasan);
-        // $this->validate();
-        // dd($this->videoId, $this->alasan);
-
+        // dd('ajasjdsajdb');
 
         // Simpan laporan baru
         Report_Video::create([

@@ -25,12 +25,21 @@
                     <p class="nav-text">Privat</p>
                 </a>
             </li>
-            <li class="nav-item text-center">
+            {{-- <li class="nav-item text-center">
                 <a class="nav-link" href="/bio" id="bioLink">
                     <i class="bi bi-person-fill mb-0" style="font-size: 23px;"></i>
                     <p class="nav-text" style="margin-top: -2px; margin-bottom: 5px;">Bio</p>
                 </a>
+            </li> --}}
+
+            <li class="nav-item text-center">
+                <a class="nav-link" href="/bio" id="bioLink">
+                    <i class="fa-solid fa-user" style="margin-bottom: 6px; margin-top: 3px; font-size: 16px;"></i>
+                    <p class="nav-text">Bio</p>
+                </a>
             </li>
+
+
         </ul>
     </div>
 </nav>
@@ -125,30 +134,45 @@
                 id: 'groupLink'
             },
             {
-                path: '/lock',
-                id: 'lockLink'
+                path: ['/lock', '/create_chat'],
+                id: 'lockLink',
+                matchMultiple: true
             },
+
             {
                 path: '/bio',
                 id: 'bioLink'
             }
         ];
 
-        // Menambahkan kelas active pada link yang sesuai
         links.forEach(link => {
             const element = document.getElementById(link.id);
+            if (!element) return;
+
             element.classList.remove('active');
-            if (currentPath === link.path) {
-                element.classList.add('active');
+
+            if (link.matchMultiple && Array.isArray(link.path)) {
+                // Cek jika currentPath cocok dengan salah satu path
+                if (link.path.some(p => currentPath.startsWith(p))) {
+                    element.classList.add('active');
+                }
+            } else {
+                if (currentPath === link.path) {
+                    element.classList.add('active');
+                }
             }
         });
 
+
+
         // Ganti logo di /chatify
         const chatLogo = document.getElementById('chatLogo');
-        if (currentPath === '/chatify') {
-            chatLogo.src = "{{ asset("storage/images/logo2.png") }}";
-        } else {
-            chatLogo.src = "{{ asset("storage/images/logo3.png") }}";
+        if (chatLogo) {
+            if (currentPath === '/chatify') {
+                chatLogo.src = "{{ asset("storage/images/logo2.png") }}";
+            } else {
+                chatLogo.src = "{{ asset("storage/images/logo3.png") }}";
+            }
         }
     });
 </script>

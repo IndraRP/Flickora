@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\GroupChatController;
 use App\Http\Controllers\PrivateChatController;
+use App\Livewire\Auth\Forgotpassword\Forgotpassword;
 use App\Livewire\Auth\Login\Login;
+use App\Livewire\Auth\Resetpassword\Resetpassword;
 use App\Livewire\Auth\Signup\Signup;
 use App\Livewire\CompressImage;
 use App\Livewire\User\Bio\Bio;
@@ -42,6 +44,9 @@ Route::get('/compres', CompressImage::class)->name('compres');
 
 Route::get('/login', Login::class)->name('login');
 Route::get('/signup', Signup::class)->name('signup');
+Route::get('/forgot-password', Forgotpassword::class)->name('forgot-password');
+Route::get('/reset-password/{token}/{email}', Resetpassword::class)->name('password.reset');
+
 Route::get('/', Page::class)->name('page');
 Route::get('/group', Group::class)->name('group');
 

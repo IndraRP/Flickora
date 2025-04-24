@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="ms-auto">
-                    <a class="text-decoration-none" href="#">
+                    <a class="text-decoration-none" href="/forgot-password">
                         <p class="text-primary mb-1">Lupa Kata Sandi</p>
                     </a>
                 </div>

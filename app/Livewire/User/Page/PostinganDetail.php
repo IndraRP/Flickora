@@ -173,7 +173,8 @@ class PostinganDetail extends Component
 
     public function report()
     {
-        $this->validate();
+        // $this->validate();
+        // dd("ujed");
 
         // Simpan laporan baru
         Report::create([

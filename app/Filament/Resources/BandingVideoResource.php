@@ -48,7 +48,7 @@ class BandingVideoResource extends Resource
                 ImageColumn::make('bukti')
                     ->label('Bukti')
                     ->square() // Gambar berbentuk persegi
-                    ->height(80) // Ukuran tinggi gambar
+                    ->height(120) // Ukuran tinggi gambar
                     ->width(120) // Ukuran lebar gambar
                     ->getStateUsing(function ($record) {
                         return $record->bukti ? asset("storage/{$record->bukti}") : asset("storage/users-avatar/avatar.png");

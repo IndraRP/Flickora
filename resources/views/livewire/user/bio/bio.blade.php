@@ -262,7 +262,7 @@
                     </div>
                 </a>
 
-                <a href="/grup" class="text-decoration-none">
+                <a href="/group" class="text-decoration-none">
                     <div class="d-block justify-content-center">
                         <i class="bi bi-people-fill text-white"></i>
                         <p class="fs-7 mb-0 text-white">100</p>

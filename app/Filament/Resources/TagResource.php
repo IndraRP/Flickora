@@ -20,8 +20,8 @@ class TagResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Postingan';
-    protected static ?string $navigationLabel = 'Tag Foto';
-    protected static ?string $pluralLabel = 'Tag Foto';
+    protected static ?string $navigationLabel = 'Tag ';
+    protected static ?string $pluralLabel = 'Tag';
 
     public static function form(Form $form): Form
     {

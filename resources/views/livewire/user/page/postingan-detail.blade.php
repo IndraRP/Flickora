@@ -230,8 +230,15 @@
             <div class="modal-content bg-dark">
                 <div class="modal-body py-5">
                     <div class="d-flex justify-content-center">
-                        <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                        <div id="lottie1" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" x-data="{ animation: null }" x-init="animation = lottie.loadAnimation({
+                            container: $el,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            {{-- path: '{{ asset("images/animation2.json") }}' --}}
+                        });" wire:ignore>
                         </div>
+
                     </div>
                     <div class="d-flex justify-content-center mt-2 text-center">
                         <p class="fs-6 text-white">Apakah anda yakin ingin melaporkan postingan ini?</p>
@@ -269,8 +276,15 @@
             <div class="modal-content bg-dark">
                 <div class="modal-body py-5">
                     <div class="d-flex justify-content-center">
-                        <div id="lottie-container" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" wire:ignore.self>
+                        <div id="lottie2" class="d-flex justify-content-center align-items-center pt-3" style="margin-top: -15px; width: 200px; height: 200px; transform: translateY(-10px);" x-data="{ animation: null }" x-init="animation = lottie.loadAnimation({
+                            container: $el,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            {{-- path: '{{ asset("images/animation5.json") }}' --}}
+                        });" wire:ignore>
                         </div>
+
                     </div>
                     <div class="d-flex justify-content-center mt-2 text-center">
                         <p class="fs-6 text-white">Apakah anda yakin ingin menghapus postingan ini?</p>
@@ -620,26 +634,25 @@
     </script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById('laporModal').addEventListener('shown.bs.modal', function() {
-                setTimeout(() => {
-                    const container = document.getElementById('lottie-container');
-
-                    // Bersihkan dulu animasi lama biar nggak bentrok
-                    container.innerHTML = "";
-
-                    // Muat ulang animasi Lottie
-                    lottie.loadAnimation({
-                        container: container,
-                        renderer: 'svg',
-                        loop: true,
-                        autoplay: true,
-                        path: '{{ asset("images/animation5.json") }}'
-                    });
-                }, 100); // Delay agar modal sudah muncul sebelum animasi dimuat
-            });
+        var animation = lottie.loadAnimation({
+            container: document.getElementById('lottie2'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '{{ asset("images/animation5.json") }}'
         });
     </script>
+
+    <script>
+        var animation = lottie.loadAnimation({
+            container: document.getElementById('lottie1'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '{{ asset("images/animation6.json") }}'
+        });
+    </script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
